@@ -14,8 +14,9 @@ import (
 func main() {
 	// init
 	initLogger()
+	weblog := initWebLogger()
 	natscon := initNATS()
-	httphandlers := handler.RegisterHTTPHandlers(natscon)
+	httphandlers := handler.RegisterHTTPHandlers(natscon, weblog)
 	// service part
 	initWebService(httphandlers)
 }
@@ -23,18 +24,21 @@ func main() {
 // init part
 
 func initWebService(router *mux.Router) {
+	fmt.Println("-> http service listening", config.HTTPADDR)
 	err := http.ListenAndServeTLS(config.HTTPADDR, config.CRTFILE, config.KEYFILE, router)
 	if err != nil {
-		logrus.WithError(err).Println("init web service error.")
+		fmt.Println("init web service error.", err)
+		logrus.WithError(err).Fatalln("init web service error.")
+		return
 	}
-	fmt.Println("-> http service listening", config.HTTPADDR)
 }
 
 func initNATS() *nats.Conn {
 	natsaddr := config.NATSADDR
 	natsCon, err := nats.Connect(natsaddr)
 	if err != nil {
-		logrus.Fatalln("nats connect error: %s", err)
+		fmt.Println("faile to connect nats.", err)
+		logrus.WithError(err).Fatalln("faile to connect nats.")
 		return nil
 	}
 	return natsCon
@@ -47,8 +51,24 @@ func initLogger() {
 	if err == nil {
 		logrus.SetOutput(logFile)
 	} else {
-		logrus.WithError(err).Println("file to write log.")
+		fmt.Println("faile to write log.", err)
+		logrus.WithError(err).Fatalln("faile to write log.")
 	}
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	return
+}
+
+func initWebLogger() *logrus.Logger {
+	log := logrus.New()
+	var logFilePath = "log/"
+	logFile, err := os.OpenFile(logFilePath+"web.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err == nil {
+		log.Out = logFile
+		// logrus.SetOutput(logFile)
+	} else {
+		fmt.Println("faile to write log.", err)
+		log.WithError(err).Fatalln("faile to write log.")
+	}
+	log.Formatter = &logrus.JSONFormatter{}
+	return log
 }
