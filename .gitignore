@@ -1,0 +1,6 @@
+.idea
+.vscode
+*.log
+debug
+debug.test
+vendor

@@ -25,7 +25,7 @@ func main() {
 func initWebService(router *mux.Router) {
 	err := http.ListenAndServeTLS(config.HTTPADDR, config.CRTFILE, config.KEYFILE, router)
 	if err != nil {
-		logrus.WithError(err).Fatalln("init web service error.")
+		logrus.WithError(err).Println("init web service error.")
 	}
 	fmt.Println("-> http service listening", config.HTTPADDR)
 }
@@ -47,7 +47,7 @@ func initLogger() {
 	if err == nil {
 		logrus.SetOutput(logFile)
 	} else {
-		logrus.WithError(err).Fatalln("file to write log.")
+		logrus.WithError(err).Println("file to write log.")
 	}
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	return
