@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
-	"github.com/nats-io/go-nats"
 	"github.com/sirupsen/logrus"
 	"github.com/wotmshuaisi/movietogether/config"
 	"github.com/wotmshuaisi/movietogether/handler"
@@ -19,8 +18,7 @@ func main() {
 	channel := pubsub.NewQueue()
 	initLogger()
 	weblog := initWebLogger()
-	natscon := initNATS()
-	httphandlers := handler.RegisterHTTPHandlers(natscon, weblog, channel)
+	httphandlers := handler.RegisterHTTPHandlers(weblog, channel)
 	rtmphandlers := handler.RegisterRTMPHandlers(channel)
 	// service part
 	go webService(httphandlers)
@@ -50,17 +48,6 @@ func rtmpService(rtmpserver *rtmp.Server) {
 }
 
 // init part
-
-func initNATS() *nats.Conn {
-	natsaddr := config.NATSADDR
-	natsCon, err := nats.Connect(natsaddr)
-	if err != nil {
-		fmt.Println("faile to connect nats.", err)
-		logrus.WithError(err).Fatalln("faile to connect nats.")
-		return nil
-	}
-	return natsCon
-}
 
 func initLogger() {
 	var logFilePath = "log/"

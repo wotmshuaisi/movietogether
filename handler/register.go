@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
-	"github.com/nats-io/go-nats"
 	"github.com/sirupsen/logrus"
 	"github.com/wotmshuaisi/movietogether/config"
 	"github.com/wotmshuaisi/movietogether/handler/httphandler"
@@ -12,12 +11,11 @@ import (
 )
 
 // RegisterHTTPHandlers ...
-func RegisterHTTPHandlers(natsCon *nats.Conn, log *logrus.Logger, channel *pubsub.Queue) *mux.Router {
+func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue) *mux.Router {
 	// handler part
 	handlers := httphandler.HTTPHandlers{
-		NatsClient: natsCon,
-		Log:        log,
-		Channel:    channel,
+		Log:     log,
+		Channel: channel,
 	}
 	// router part
 	router := mux.NewRouter()
