@@ -21,7 +21,10 @@ func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue) *mux.Router
 	router := mux.NewRouter()
 
 	router.Use(handlers.LoggingMiddleware)
+	// chat
 	router.HandleFunc("/chat", handlers.Chat)
+	router.HandleFunc("/msg", handlers.Msg)
+	// moive
 	router.HandleFunc(config.FLVURL, handlers.Movie)
 
 	return router

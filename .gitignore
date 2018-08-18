@@ -4,3 +4,4 @@
 debug
 debug.test
 vendor
+db.sqlite3

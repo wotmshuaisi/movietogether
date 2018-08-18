@@ -1,7 +1,6 @@
 package httphandler
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/nareix/joy4/av/avutil"
@@ -30,14 +29,4 @@ func (handlers *HTTPHandlers) Movie(w http.ResponseWriter, r *http.Request) {
 
 	avutil.CopyFile(muxer, cursor)
 	return
-}
-
-type writeFlusher struct {
-	httpflusher http.Flusher
-	io.Writer
-}
-
-func (wf writeFlusher) Flush() error {
-	wf.httpflusher.Flush()
-	return nil
 }

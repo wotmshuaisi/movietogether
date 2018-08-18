@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
+	"net/http"
+
 	"github.com/go-chi/chi"
 	"github.com/wotmshuaisi/movietogether/test/handler"
-	"net/http"
 )
 
 func main() {
@@ -14,6 +15,19 @@ func main() {
 	flag.Parse()
 	// listen websocket
 	initWebService(*listenAddr)
+
+	// // go lang channel example
+	// channel := make(chan []byte, 2048)
+	// go func() {
+	// 	for {
+	// 		channel <- []byte("ping")
+	// 		time.Sleep(time.Second * 3)
+	// 	}
+	// }()
+	// for {
+	// 	print(<-channel)
+	// 	time.Sleep(time.Second * 1)
+	// }
 }
 
 func initWebService(address string) {

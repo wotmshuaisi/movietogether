@@ -1,17 +1,17 @@
 package httphandler
 
 import (
-	"github.com/gorilla/websocket"
 	"net/http"
 )
 
-var (
-	upgrader = websocket.Upgrader{}
-)
-
-// Chat websocket chat interface :  recv && transfer to nats
+// Chat interface :  recv message && broadcast
 func (handlers *HTTPHandlers) Chat(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("status", "200")
-	w.Write([]byte("no content"))
+	// wsCon, err := handlers.Upgrader.Upgrade(w, r, nil)
+	return
+}
+
+// History get paged data
+func (handlers *HTTPHandlers) History(w http.ResponseWriter, r *http.Request) {
+	// wsCon, err :=
 	return
 }

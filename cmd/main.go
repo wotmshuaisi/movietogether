@@ -16,6 +16,7 @@ import (
 func main() {
 	// init
 	channel := pubsub.NewQueue()
+	// msgchannel := make(chan []byte, 1024)
 	initLogger()
 	weblog := initWebLogger()
 	httphandlers := handler.RegisterHTTPHandlers(weblog, channel)

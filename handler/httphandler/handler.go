@@ -1,12 +1,29 @@
 package httphandler
 
 import (
+	"io"
+	"net/http"
+
+	"github.com/gorilla/websocket"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/sirupsen/logrus"
 )
 
 // HTTPHandlers ...
 type HTTPHandlers struct {
-	Log     *logrus.Logger
-	Channel *pubsub.Queue
+	Log      *logrus.Logger
+	Channel  *pubsub.Queue
+	Upgrader *websocket.Upgrader
+	MsgQueue *chan []byte
+}
+
+// others
+type writeFlusher struct {
+	httpflusher http.Flusher
+	io.Writer
+}
+
+func (wf writeFlusher) Flush() error {
+	wf.httpflusher.Flush()
+	return nil
 }
