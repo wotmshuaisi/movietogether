@@ -6,13 +6,21 @@ import (
 
 // Clients ...
 type Clients struct {
-	Token string `json:"token"`
-	Name  string `json:"name"`
+	Token string `db:"client_token"`
+	Name  string `db:"client_name"`
 }
 
 // Messages ...
 type Messages struct {
-	Name     string     `json:"name"`
-	Message  string     `json:"message"`
-	Datetime *time.Time `json:"datetime"`
+	Name     string     `db:"name"`
+	Message  string     `db:"message"`
+	Datetime *time.Time `db:"datetime"`
+}
+
+// MessagesQueryset ...
+type MessagesQueryset struct {
+	TotalPage int         `json:"total_page"`
+	TotalNums int         `json:"total_nums"`
+	Page      int         `json:"page"`
+	Result    []*Messages `json:"result"`
 }
