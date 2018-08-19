@@ -5,21 +5,31 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/gorilla/websocket"
+
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	"github.com/nareix/joy4/av/pubsub"
 	"github.com/nareix/joy4/format/rtmp"
 	"github.com/sirupsen/logrus"
 	"github.com/wotmshuaisi/movietogether/config"
 	"github.com/wotmshuaisi/movietogether/handler"
+	"github.com/wotmshuaisi/movietogether/model"
 )
 
 func main() {
 	// init
-	channel := pubsub.NewQueue()
-	// msgchannel := make(chan []byte, 1024)
 	initLogger()
 	weblog := initWebLogger()
-	httphandlers := handler.RegisterHTTPHandlers(weblog, channel)
+	channel := pubsub.NewQueue()
+	msgchannel := make(chan []byte, 2048)
+	wsupgrader := &websocket.Upgrader{}
+	db := initDB()
+	m := model.NewModel(db)
+
+	httphandlers := handler.RegisterHTTPHandlers(weblog, channel, wsupgrader, msgchannel, m)
 	rtmphandlers := handler.RegisterRTMPHandlers(channel)
 	// service part
 	go webService(httphandlers)
@@ -62,6 +72,17 @@ func initLogger() {
 	}
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	return
+}
+
+func initDB() *sqlx.DB {
+	var err error
+	dbPath := "../data/db.sqlite3"
+	db, err := sqlx.Open("sqlite3", dbPath)
+	if err != nil {
+		fmt.Println("open db [" + dbPath + "] failed")
+		logrus.WithError(err).Fatalln("err database connection")
+	}
+	return db
 }
 
 func initWebLogger() *logrus.Logger {
