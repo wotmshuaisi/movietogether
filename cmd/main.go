@@ -91,7 +91,6 @@ func initWebLogger() *logrus.Logger {
 	logFile, err := os.OpenFile(logFilePath+"web.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err == nil {
 		log.Out = logFile
-		// logrus.SetOutput(logFile)
 	} else {
 		fmt.Println("faile to write log.", err)
 		log.WithError(err).Fatalln("faile to write log.")

@@ -23,30 +23,48 @@ func generatetoken() string {
 	return result
 }
 
-func jsonerrorreturn(err error, errcode string, w http.ResponseWriter) {
+func jsonerrorreturn(err error, errcode int, w http.ResponseWriter) http.ResponseWriter {
 	var res result
 	if err != nil {
 		res.Err = err.Error()
-		j, _ := json.Marshal(res)
-		w.Write(j)
-		w.Header().Set("status", errcode)
-		return
+	} else {
+		res.Err = ""
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(errcode)
+	j, _ := json.Marshal(res)
+	w.Write(j)
+	return w
+}
+
+// Index ...
+func Index(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "index.html")
+	return
 }
 
 // Register regiter user to database
 func (handlers *HTTPHandlers) Register(w http.ResponseWriter, r *http.Request) {
+	tokenObj, _ := r.Cookie("token")
+	if tokenObj.Value != "" {
+		_, err := handlers.Model.ClientGet(tokenObj.Value)
+		if err == nil {
+			w = jsonerrorreturn(nil, 200, w)
+			return
+		}
+	}
 	var u user
-	var res result
 	bytes, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(bytes, &u)
 	if err != nil {
-		jsonerrorreturn(err, "400", w)
+		w = jsonerrorreturn(err, 400, w)
+		return
 	}
 	token := generatetoken()
 	err = handlers.Model.ClientCreate(token, u.Name)
 	if err != nil {
-		jsonerrorreturn(err, "200", w)
+		w = jsonerrorreturn(err, 200, w)
+		return
 	}
 	cookie := http.Cookie{
 		Name:    "token",
@@ -54,11 +72,8 @@ func (handlers *HTTPHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now().Add(time.Hour * 24 * 60),
 		Path:    "/",
 	}
+	w = jsonerrorreturn(nil, 200, w)
 	http.SetCookie(w, &cookie)
-	w.Header().Set("status", "200")
-	res.Err = ""
-	j, _ := json.Marshal(res)
-	w.Write(j)
 	return
 }
 
@@ -66,14 +81,17 @@ func (handlers *HTTPHandlers) Register(w http.ResponseWriter, r *http.Request) {
 func (handlers *HTTPHandlers) CheckUser(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
-		jsonerrorreturn(err, "400", w)
+		w = jsonerrorreturn(err, 400, w)
+		return
 	}
 	c, err := handlers.Model.ClientGet(cookie.Value)
 	if err != nil {
-		jsonerrorreturn(err, "200", w)
+		w = jsonerrorreturn(err, 200, w)
+		return
 	}
 	if c == nil || len(c.Token) <= 0 {
-		jsonerrorreturn(errors.New("client not exists"), "403", w)
+		w = jsonerrorreturn(errors.New("client not exists"), 403, w)
+		return
 	}
 	w.Header().Set("status", "200")
 	res := &user{
@@ -81,6 +99,7 @@ func (handlers *HTTPHandlers) CheckUser(w http.ResponseWriter, r *http.Request) 
 	}
 	j, _ := json.Marshal(res)
 	w.Write(j)
+	w.Header().Set("Content-Type", "application/json")
 	return
 }
 
@@ -99,12 +118,11 @@ func (handlers *HTTPHandlers) Chat(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, msg, err := wsCon.ReadMessage()
 		if err != nil {
-			if websocket.IsCloseError(err, 1001) {
+			if websocket.IsCloseError(err, 1001) || websocket.IsCloseError(err, 1005) {
 				logrus.Infoln("http Chat client " + name + " lost connection")
 				break
 			}
-			logrus.WithError(err).Infoln("http Chat receve message from " + name)
-			break
+			logrus.WithError(err).Infoln("http Chat client " + name + " lost connection")
 		}
 		if len(msg) <= 0 {
 			continue

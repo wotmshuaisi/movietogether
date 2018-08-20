@@ -26,9 +26,12 @@ func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue, upgrader *w
 	router := mux.NewRouter()
 
 	router.Use(handlers.LoggingMiddleware)
+	router.Use(handlers.UserCheckMiddleware)
 	// chat
+	router.HandleFunc("/", httphandler.Index)
 	router.HandleFunc("/register", handlers.Register).Methods("POST")
 	router.HandleFunc("/checkuser", handlers.CheckUser).Methods("GET")
+
 	router.HandleFunc("/history", handlers.History).Methods("GET")
 	router.HandleFunc("/msg", handlers.Message)
 	router.HandleFunc("/chat", handlers.Chat)
