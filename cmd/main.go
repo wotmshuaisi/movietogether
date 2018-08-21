@@ -76,7 +76,7 @@ func initLogger() {
 
 func initDB() *sqlx.DB {
 	var err error
-	dbPath := "../data/db.sqlite3"
+	dbPath := "../data/db.sqlite3?charset=utf8mb4&collation=utf8mb4_unicode_ci"
 	db, err := sqlx.Open("sqlite3", dbPath)
 	if err != nil {
 		fmt.Println("open db [" + dbPath + "] failed")

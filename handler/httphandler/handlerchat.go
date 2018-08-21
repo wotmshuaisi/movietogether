@@ -159,7 +159,7 @@ func (handlers *HTTPHandlers) Message(w http.ResponseWriter, r *http.Request) {
 		err := wsCon.WriteJSON(jsondata)
 		if err != nil {
 			if websocket.IsCloseError(err, 1001) {
-				logrus.Infoln("http Message client " + name + " lost connection")
+				logrus.WithError(err).Infoln("http Message client " + name + " lost connection")
 				break
 			}
 			logrus.WithError(err).Infoln("http Message write message to " + name)
