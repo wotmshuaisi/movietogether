@@ -16,11 +16,12 @@ import (
 func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue, upgrader *websocket.Upgrader, msgqueue chan []byte, m model.MovietogetherDBInterface) *mux.Router {
 	// handler part
 	handlers := httphandler.HTTPHandlers{
-		Log:      log,
-		Channel:  channel,
-		Upgrader: upgrader,
-		MsgQueue: msgqueue,
-		Model:    m,
+		Log:       log,
+		Channel:   channel,
+		Upgrader:  upgrader,
+		MsgQueue:  msgqueue,
+		Model:     m,
+		WsClients: map[string]*websocket.Conn{},
 	}
 	// router part
 	router := mux.NewRouter()
@@ -33,10 +34,12 @@ func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue, upgrader *w
 	router.HandleFunc("/checkuser", handlers.CheckUser).Methods("GET")
 
 	router.HandleFunc("/history", handlers.History).Methods("GET")
-	router.HandleFunc("/msg", handlers.Message)
 	router.HandleFunc("/chat", handlers.Chat)
 	// moive
 	router.HandleFunc(config.FLVURL, handlers.Movie)
+
+	// broadcast message
+	go handlers.Broadcast()
 
 	return router
 }

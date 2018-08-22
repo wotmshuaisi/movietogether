@@ -12,11 +12,12 @@ import (
 
 // HTTPHandlers ...
 type HTTPHandlers struct {
-	Log      *logrus.Logger
-	Channel  *pubsub.Queue
-	Upgrader *websocket.Upgrader
-	MsgQueue chan []byte
-	Model    model.MovietogetherDBInterface
+	Log       *logrus.Logger
+	Channel   *pubsub.Queue
+	Upgrader  *websocket.Upgrader
+	MsgQueue  chan []byte
+	WsClients map[string]*websocket.Conn
+	Model     model.MovietogetherDBInterface
 }
 
 // others

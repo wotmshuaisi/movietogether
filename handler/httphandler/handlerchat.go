@@ -46,7 +46,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 // Register regiter user to database
 func (handlers *HTTPHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	tokenObj, _ := r.Cookie("token")
-	if tokenObj.Value != "" {
+	if tokenObj != nil {
 		_, err := handlers.Model.ClientGet(tokenObj.Value)
 		if err == nil {
 			w = jsonerrorreturn(nil, 200, w)
@@ -69,11 +69,14 @@ func (handlers *HTTPHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
 		Name:    "token",
 		Value:   token,
-		Expires: time.Now().Add(time.Hour * 24 * 60),
+		Expires: time.Now().Add(time.Hour * 24 * 360),
 		Path:    "/",
 	}
-	w = jsonerrorreturn(nil, 200, w)
 	http.SetCookie(w, &cookie)
+	w.WriteHeader(200)
+	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(&result{Err: ""})
+	w.Write(j)
 	return
 }
 
@@ -110,7 +113,9 @@ func (handlers *HTTPHandlers) Chat(w http.ResponseWriter, r *http.Request) {
 		logrus.WithError(err).Errorln("http Chat websocket accepting connection")
 	}
 	name := r.Context().Value(namekey).(string)
+	handlers.WsClients[name] = wsCon
 	defer func() {
+		delete(handlers.WsClients, name)
 		wsCon.Close()
 		return
 	}()
@@ -142,34 +147,22 @@ func (handlers *HTTPHandlers) Chat(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// Message send msg to client from queue
-func (handlers *HTTPHandlers) Message(w http.ResponseWriter, r *http.Request) {
-	wsCon, err := handlers.Upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		logrus.WithError(err).Errorln("http Message websocket accepting connection")
-	}
-	defer func() {
-		wsCon.Close()
-		return
-	}()
-	name := r.Context().Value(namekey).(string)
-	// websocket connection established
-	for {
-		jsondata := <-handlers.MsgQueue
-		err := wsCon.WriteJSON(jsondata)
-		if err != nil {
-			if websocket.IsCloseError(err, 1001) {
-				logrus.WithError(err).Infoln("http Message client " + name + " lost connection")
-				break
-			}
-			logrus.WithError(err).Infoln("http Message write message to " + name)
-			break
-		}
-	}
-}
-
 // History get paged data
 func (handlers *HTTPHandlers) History(w http.ResponseWriter, r *http.Request) {
 	// wsCon, err :=
 	return
+}
+
+// Broadcast send msg to client from queue
+func (handlers *HTTPHandlers) Broadcast() {
+	// websocket connection established
+	for {
+		jsondata := <-handlers.MsgQueue
+		for _, item := range handlers.WsClients {
+			err := item.WriteJSON(jsondata)
+			if err != nil {
+				logrus.WithError(err).Errorln("Broadcast")
+			}
+		}
+	}
 }

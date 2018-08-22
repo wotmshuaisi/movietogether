@@ -243,6 +243,12 @@
             font-size: .9em;
             min-height: 48px;
             width: 100%;
+            transition: all 0.3s;
+        }
+
+        .input_msg_write input:focus {
+            outline: none;
+            box-shadow: inset 0px 0px 2px #FBC403;
         }
 
         .type_msg {
@@ -261,7 +267,7 @@
             right: 0;
             text-align: center;
             top: 0;
-            width: 15%;
+            width: 20%;
         }
 
         .messaging {
@@ -271,6 +277,10 @@
         .msg_history {
             height: 516px;
             overflow-y: auto;
+        }
+
+        div::-webkit-scrollbar {
+            width: 0;
         }
 
         /* public */
@@ -339,7 +349,7 @@
     </style>
 </head>
 
-<body class="h-100">
+<body class="h-100 bg-light">
     <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-gold-black-s h-5 fs-8">
         <a class="navbar-brand fs-8 text-gold" href="#">Movie Together</a>
         <div class="form-inline mt-md-0 text-white position-absolute pr-5 r-0" id="welcome">
@@ -422,42 +432,74 @@
         var chatWsCon = undefined
         var msgWsCon = undefined
         var $msgInput = $("#chat-msg")
+        var $msgpanel = $("#msgPanel");
+        var $usernameInput = $("#register-username")
 
-        function initWebsocket() {
-            status = logincheck(false)
-            chatWsCon = new WebSocket("wss://" + window.location.hostname + ":" + window.location.port + "/chat");
-            msgWsCon = new WebSocket("wss://" + window.location.hostname + ":" + window.location.port + "/msg");
+        function InitBasicConfig() {
+            var status = false
+            status = logincheck(true)
+            if (status == true) {
+                // flv player
+                if (flvjs.isSupported()) {
+                    var videoElement = document.getElementById('videoElement');
+                    var flvPlayer = flvjs.createPlayer({
+                        type: 'flv',
+                        url: '/movie'
+                    });
+                    flvPlayer.attachMediaElement(videoElement);
+                    flvPlayer.load();
+                    flvPlayer.play();
+                }
+                // websocket
+                chatWsCon = new WebSocket("wss://" + window.location.hostname + ":" + window.location.port + "/chat");
+                chatWsCon.onmessage = function (event) {
+                    data = event.data.replace(/\"/g, '')
+                    jsondata = JSON.parse(atou(data))
+                    $temppanel = $(generateMsgTpl(jsondata.name, jsondata.message, jsondata.datetime))
+                    $temppanel.hide()
+                    $msgpanel.prepend($temppanel)
+                    $temppanel.slideDown("slow")
+                }
+                chatWsCon.onclose = function () {
+                    alert("connection has been closed, refresh this website.")
+                }
+                window.onunload = function () {
+                    // close websocket connections
+                    chatWsCon.close()
+                }
+            }
         }
 
         function logincheck(init) {
+            var status = false
             // login check
             $.ajax({
                 url: '/checkuser',
                 type: 'get',
+                async: false,
                 success: function (arg) {
                     arg = JSON.parse(arg)
                     if (arg.err != undefined) {
                         if (init) {
                             $("#register-modal").modal('show')
                         }
-                        return false
+                        status = false
                     } else {
                         $name = arg.name
                         if (init) {
                             $("#welcome").text($("#welcome").text() + $name)
                         }
-                        return true
+                        status = true
                     }
                 },
                 error: function (arg) {
-                    arg = JSON.parse(arg)
-                    if (check) {
+                    if (init) {
                         $("#register-modal").modal('show')
                     }
-                    return false
+                    status = false
                 }
             });
-            return false
+            return status
         }
 
         function sendMessage() {
@@ -468,15 +510,47 @@
             }
             chatWsCon.send($msgInput.val())
             $msgInput.css("border", "none")
+            $msgInput.val("")
         }
 
         function generateMsgTpl(n, m, d) {
-            console.log(name)
+            datetime = new Date(d)
+            datestr = datetime.getHours() + ":" + datetime.getMinutes() + " " + datetime.toDateString()
             if (n == $name) {
-                return "<div class='outgoing_msg'><div class='sent_msg'><p>" + m + "</p><span class='time_date'>" + d + "</span></div></div>"
+                return "<div class='outgoing_msg'><div class='sent_msg'><p>" + m + "</p><span class='time_date'>" + datestr + "</span></div></div>"
             } else {
-                return "<div class='incoming_msg'><div class='incoming_msg_img'>" + n + "</div><div class='received_msg'><div class='received_withd_msg'><p>" + m + "</p><span class='time_date'>" + d + "</span></div></div></div>"
+                return "<div class='incoming_msg'><div class='incoming_msg_img'>" + n + "</div><div class='received_msg'><div class='received_withd_msg'><p>" + m + "</p><span class='time_date'>" + datestr + "</span></div></div></div>"
             }
+        }
+        // register part
+        function showregistererror(err) {
+            var $usernameInput = $("#register-username")
+            $usernameInput.siblings(".invalid-feedback").text(err)
+            $usernameInput.siblings(".invalid-feedback").fadeIn("fast")
+        }
+        function register() {
+            if ($usernameInput.val().length <= 3) {
+                $usernameInput.css("border-color", "#dc3545")
+                showregistererror("username must more than 4")
+                return
+            }
+            $.ajax({
+                url: '/register',
+                type: 'POST',
+                contentType: "application/json",
+                data: JSON.stringify({
+                    "name": $usernameInput.val()
+                }),
+                async: false,
+                success: function (arg) {
+                    arg = JSON.parse(arg)
+                    if (arg.err != "") {
+                        showregistererror(arg.err)
+                    } else {
+                        window.location.reload()
+                    }
+                }
+            });
         }
 
         // 使用utf-8字符集解析base64字符串 
@@ -491,67 +565,21 @@
                 return
             }
             // check login or not
-            logincheck(true)
-            // register part
-            var $usernameInput = $("#register-username")
-            function showregistererror(err) {
-                var $usernameInput = $("#register-username")
-                $usernameInput.siblings(".invalid-feedback").text(err)
-                $usernameInput.siblings(".invalid-feedback").fadeIn("fast")
-            }
-            function register() {
-                if ($usernameInput.val().length <= 3) {
-                    $usernameInput.css("border-color", "#dc3545")
-                    showregistererror("username must more than 4")
-                    return
-                }
-                $.ajax({
-                    url: '/register',
-                    type: 'POST',
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        "name": $usernameInput.val()
-                    }),
-                    success: function (arg) {
-                        arg = JSON.parse(arg)
-                        if (arg.err != "") {
-                            showregistererror(arg.err)
-                        } else {
-                            return
-                        }
-                    }
-                });
-            }
-            // websocket part
-            initWebsocket()
-            window.onunload = function () {
-                // close websocket connections
-                chatWsCon.close()
-                msgWsCon.close()
-            }
-            var $msgpanel = $("#msgPanel");
-            msgWsCon.onmessage = function (event) {
-                data = event.data.replace(/\"/g, '')
-                jsondata = JSON.parse(atou(data))
-                console.log(jsondata)
-                $msgpanel.prepend($(generateMsgTpl(jsondata.name, jsondata.message, jsondata.datetime)))
-            }
-            // flv player
-            if (flvjs.isSupported()) {
-                var videoElement = document.getElementById('videoElement');
-                var flvPlayer = flvjs.createPlayer({
-                    type: 'flv',
-                    url: '/movie'
-                });
-                flvPlayer.attachMediaElement(videoElement);
-                flvPlayer.load();
-                flvPlayer.play();
-            }
+            InitBasicConfig()
             // chat side bar
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active').promise().done(function () {
                     $('#content').toggleClass("c-10")
                 })
+            })
+            // bind text input event
+            $(window).keypress(function (event) {
+                if (event.which != 13) {
+                    return
+                }
+                if ($msgInput.is(":focus")) {
+                    sendMessage()
+                }
             })
         })
     </script>
