@@ -37,11 +37,11 @@ func (handlers *RTMPHandler) Publish(rtmpCon *rtmp.Conn) {
 	return
 }
 
-// Play accept rtmp streaming
-func (handlers *RTMPHandler) Play(rtmpCon *rtmp.Conn) {
-	if handlers.Channel != nil {
-		cursor := handlers.Channel.Latest()
-		avutil.CopyFile(rtmpCon, cursor)
-	}
-	return
-}
+// // Play accept rtmp streaming
+// func (handlers *RTMPHandler) Play(rtmpCon *rtmp.Conn) {
+// 	if handlers.Channel != nil {
+// 		cursor := handlers.Channel.Latest()
+// 		avutil.CopyFile(rtmpCon, cursor)
+// 	}
+// 	return
+// }
