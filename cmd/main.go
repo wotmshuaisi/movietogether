@@ -40,7 +40,7 @@ func main() {
 
 func webService(router *mux.Router) {
 	fmt.Println("-> http service listening", config.HTTPADDR)
-	err := http.ListenAndServeTLS(config.HTTPADDR, config.CRTFILE, config.KEYFILE, router)
+	err := http.ListenAndServe(config.HTTPADDR, router)
 	if err != nil {
 		fmt.Println("init web service error.", err)
 		logrus.WithError(err).Fatalln("init web service error.")

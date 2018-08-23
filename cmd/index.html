@@ -451,7 +451,7 @@
                     flvPlayer.play();
                 }
                 // websocket
-                chatWsCon = new WebSocket("wss://" + window.location.hostname + ":" + window.location.port + "/chat");
+                chatWsCon = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/chat");
                 chatWsCon.onmessage = function (event) {
                     data = event.data.replace(/\"/g, '')
                     jsondata = JSON.parse(atou(data))
@@ -543,14 +543,14 @@
                 }),
                 async: false,
                 success: function (arg) {
-                    arg = JSON.parse(arg)
+                    // arg = JSON.parse(arg)
                     if (arg.err != "") {
                         showregistererror(arg.err)
                     } else {
-                        window.location.reload()
                     }
                 }
             });
+            window.location.reload()
         }
 
         // 使用utf-8字符集解析base64字符串 
