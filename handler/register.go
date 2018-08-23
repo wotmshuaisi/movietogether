@@ -52,6 +52,6 @@ func RegisterRTMPHandlers(channel *pubsub.Queue) *rtmp.Server {
 	}
 	// handle func part
 	rtmpServer.HandlePublish = handlers.Publish
-	rtmpServer.HandlePlay = handlers.Play
+	// rtmpServer.HandlePlay = handlers.Play
 	return &rtmpServer
 }
