@@ -23,6 +23,7 @@ func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue, upgrader *w
 		Model:     m,
 		WsClients: map[string]*websocket.Conn{},
 	}
+
 	// router part
 	router := mux.NewRouter()
 

@@ -128,6 +128,7 @@ func (handlers *HTTPHandlers) Chat(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			logrus.WithError(err).Infoln("http Chat client " + name + " lost connection")
+			break
 		}
 		if len(msg) <= 0 {
 			continue

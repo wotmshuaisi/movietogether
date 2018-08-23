@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -22,11 +23,18 @@ import (
 func main() {
 	// init
 	initLogger()
+	// web logrus
 	weblog := initWebLogger()
+	// rtmp channel
 	channel := pubsub.NewQueue()
+	// message channel
 	msgchannel := make(chan []byte, 2048)
+	// websocket
 	wsupgrader := &websocket.Upgrader{}
+	wsupgrader.HandshakeTimeout = time.Second * 30
+	// database
 	db := initDB()
+	// db model
 	m := model.NewModel(db)
 
 	httphandlers := handler.RegisterHTTPHandlers(weblog, channel, wsupgrader, msgchannel, m)
@@ -93,7 +101,7 @@ func initWebLogger() *logrus.Logger {
 		log.Out = logFile
 	} else {
 		fmt.Println("faile to write log.", err)
-		log.WithError(err).Fatalln("faile to write log.")
+		logrus.WithError(err).Fatalln("faile to write log.")
 	}
 	log.Formatter = &logrus.JSONFormatter{}
 	return log

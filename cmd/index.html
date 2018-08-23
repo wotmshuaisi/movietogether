@@ -531,7 +531,7 @@
         function register() {
             if ($usernameInput.val().length <= 3) {
                 $usernameInput.css("border-color", "#dc3545")
-                showregistererror("username must more than 4")
+                showregistererror("username must have more than 4 characters")
                 return
             }
             $.ajax({
@@ -581,6 +581,9 @@
                     sendMessage()
                 }
             })
+            setInterval(function () {
+                chatWsCon.send("")
+            }, 1000*20)
         })
     </script>
 
