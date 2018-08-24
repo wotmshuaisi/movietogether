@@ -1,7 +1,6 @@
 package httphandler
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
@@ -47,7 +46,9 @@ func (handlers *HTTPHandlers) UserCheckMiddleware(next http.Handler) http.Handle
 			w = jsonerrorreturn(errors.New("not allowed"), 403, w)
 			return
 		}
-		ctx := context.WithValue(r.Context(), namekey, c.Name)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		// ctx := context.WithValue(r.Context(), namekey, c.Name)
+		// next.ServeHTTP(w, r.WithContext(ctx))
+		handlers.Name = c.Name
+		next.ServeHTTP(w, r)
 	})
 }

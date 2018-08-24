@@ -112,7 +112,7 @@ func (handlers *HTTPHandlers) Chat(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logrus.WithError(err).Errorln("http Chat websocket accepting connection")
 	}
-	name := r.Context().Value(namekey).(string)
+	name := handlers.Name
 	handlers.WsClients[name] = wsCon
 	defer func() {
 		delete(handlers.WsClients, name)
