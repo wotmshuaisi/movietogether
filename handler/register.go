@@ -30,7 +30,7 @@ func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue, upgrader *w
 	router.Use(handlers.LoggingMiddleware)
 	router.Use(handlers.UserCheckMiddleware)
 	// chat
-	router.HandleFunc("/mt", httphandler.Index)
+	router.HandleFunc("/mt/", httphandler.Index)
 	router.HandleFunc("/mt/register", handlers.Register).Methods("POST")
 	router.HandleFunc("/mt/checkuser", handlers.CheckUser).Methods("GET")
 
