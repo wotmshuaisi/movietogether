@@ -30,12 +30,12 @@ func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue, upgrader *w
 	router.Use(handlers.LoggingMiddleware)
 	router.Use(handlers.UserCheckMiddleware)
 	// chat
-	router.HandleFunc("/", httphandler.Index)
-	router.HandleFunc("/register", handlers.Register).Methods("POST")
-	router.HandleFunc("/checkuser", handlers.CheckUser).Methods("GET")
+	router.HandleFunc("/mt", httphandler.Index)
+	router.HandleFunc("/mt/register", handlers.Register).Methods("POST")
+	router.HandleFunc("/mt/checkuser", handlers.CheckUser).Methods("GET")
 
-	router.HandleFunc("/history", handlers.History).Methods("GET")
-	router.HandleFunc("/chat", handlers.Chat)
+	router.HandleFunc("/mt/history", handlers.History).Methods("GET")
+	router.HandleFunc("/mt/chat", handlers.Chat)
 	// moive
 	router.HandleFunc(config.FLVURL, handlers.Movie)
 

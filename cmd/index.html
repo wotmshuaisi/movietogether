@@ -444,14 +444,15 @@
                     var videoElement = document.getElementById('videoElement');
                     var flvPlayer = flvjs.createPlayer({
                         type: 'flv',
-                        url: '/movie'
+                        url: '/mt/movie',
+                        withCredentials: true
                     });
                     flvPlayer.attachMediaElement(videoElement);
                     flvPlayer.load();
                     flvPlayer.play();
                 }
                 // websocket
-                chatWsCon = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/chat");
+                chatWsCon = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/mt/chat");
                 chatWsCon.onmessage = function (event) {
                     data = event.data.replace(/\"/g, '')
                     jsondata = JSON.parse(atou(data))
@@ -474,7 +475,7 @@
             var status = false
             // login check
             $.ajax({
-                url: '/checkuser',
+                url: '/mt/checkuser',
                 type: 'get',
                 async: false,
                 success: function (arg) {
@@ -535,7 +536,7 @@
                 return
             }
             $.ajax({
-                url: '/register',
+                url: '/mt/register',
                 type: 'POST',
                 contentType: "application/json",
                 data: JSON.stringify({
