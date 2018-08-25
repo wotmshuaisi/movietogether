@@ -18,7 +18,6 @@ type HTTPHandlers struct {
 	MsgQueue  chan []byte
 	WsClients map[string]*websocket.Conn
 	Model     model.MovietogetherDBInterface
-	Name      string
 }
 
 // others

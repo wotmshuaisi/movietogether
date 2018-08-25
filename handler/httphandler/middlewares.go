@@ -1,6 +1,7 @@
 package httphandler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -28,7 +29,7 @@ func (handlers *HTTPHandlers) LoggingMiddleware(next http.Handler) http.Handler 
 func (handlers *HTTPHandlers) UserCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		uri := r.RequestURI
-		if uri != "/history" && uri != "/msg" && uri != "/chat" && uri != config.FLVURL {
+		if uri != config.PREFIXURI+"/history" && uri != config.PREFIXURI+"/msg" && uri != config.PREFIXURI+"/chat" && uri != config.PREFIXURI+"/movie" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -46,9 +47,8 @@ func (handlers *HTTPHandlers) UserCheckMiddleware(next http.Handler) http.Handle
 			w = jsonerrorreturn(errors.New("not allowed"), 403, w)
 			return
 		}
-		// ctx := context.WithValue(r.Context(), namekey, c.Name)
-		// next.ServeHTTP(w, r.WithContext(ctx))
-		handlers.Name = c.Name
-		next.ServeHTTP(w, r)
+		logrus.Println(c.Name)
+		ctx := context.WithValue(r.Context(), namekey, c.Name)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

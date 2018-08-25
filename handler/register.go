@@ -30,14 +30,14 @@ func RegisterHTTPHandlers(log *logrus.Logger, channel *pubsub.Queue, upgrader *w
 	router.Use(handlers.LoggingMiddleware)
 	router.Use(handlers.UserCheckMiddleware)
 	// chat
-	router.HandleFunc("/mt/", httphandler.Index)
-	router.HandleFunc("/mt/register", handlers.Register).Methods("POST")
-	router.HandleFunc("/mt/checkuser", handlers.CheckUser).Methods("GET")
+	router.HandleFunc(config.PREFIXURI+"/", httphandler.Index)
+	router.HandleFunc(config.PREFIXURI+"/register", handlers.Register).Methods("POST")
+	router.HandleFunc(config.PREFIXURI+"/checkuser", handlers.CheckUser).Methods("GET")
 
-	router.HandleFunc("/mt/history", handlers.History).Methods("GET")
-	router.HandleFunc("/mt/chat", handlers.Chat)
+	router.HandleFunc(config.PREFIXURI+"/history", handlers.History).Methods("GET")
+	router.HandleFunc(config.PREFIXURI+"/chat", handlers.Chat)
 	// moive
-	router.HandleFunc(config.FLVURL, handlers.Movie)
+	router.HandleFunc(config.PREFIXURI+"/movie", handlers.Movie)
 
 	// broadcast message
 	go handlers.Broadcast()
@@ -53,6 +53,5 @@ func RegisterRTMPHandlers(channel *pubsub.Queue) *rtmp.Server {
 	}
 	// handle func part
 	rtmpServer.HandlePublish = handlers.Publish
-	// rtmpServer.HandlePlay = handlers.Play
 	return &rtmpServer
 }
