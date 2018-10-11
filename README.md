@@ -2,7 +2,7 @@
 
 based on golang, rtmp websocket project for chating and watch movie together
 
-## preview
+## Video Preview
 
 [![youtube](http://img.youtube.com/vi/zyHoc-2rhN4/0.jpg)](http://www.youtube.com/watch?v=zyHoc-2rhN4)
 
@@ -19,3 +19,4 @@ based on golang, rtmp websocket project for chating and watch movie together
 1. add chat history
 2. write dockerfile
 3. online list
+4. add movie info
